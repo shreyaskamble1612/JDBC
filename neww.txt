@@ -1,0 +1,130 @@
+import java.sql.*;
+
+public class Shree {
+    private static final String url = "jdbc:mysql://localhost:3306/";
+    private static final String user = "root";
+    private static final String password = "root";
+
+    public static void main(String[] args) {
+        try {
+
+            Class.forName("com.mysql.cj.jdbc.Driver");
+
+            Connection connection = DriverManager.getConnection(url, user, password);
+            System.out.println("Database connected successfully");
+
+            Statement statement = connection.createStatement();
+
+            createDatabase(statement);
+            useDb(statement);
+            createTable(statement);
+
+            createStudent(statement, 1, "piyush", "Shingade", "piyush@gmail.com", 23);
+
+            readStudents(statement);
+
+            updateStudent(statement, 1, "UpdatedFirstName");
+
+            deleteStudent(statement, 1);
+
+            connection.close();
+        } catch (ClassNotFoundException e) {
+            System.out.println("Driver not found: " + e.getMessage());
+        } catch (SQLException e) {
+            System.out.println("SQL Error: " + e.getMessage());
+        }
+    }
+
+    private static void createDatabase(Statement statement) {
+        String createDatabaseQuery = "CREATE DATABASE IF NOT EXISTS School";
+        try {
+            statement.executeUpdate(createDatabaseQuery);
+            System.out.println("Database created successfully!");
+        } catch (SQLException e) {
+            System.out.println("Error creating database: " + e.getMessage());
+        }
+    }
+
+    private static void useDb(Statement statement) {
+        String useDbQuery = "USE School";
+        try {
+            statement.executeUpdate(useDbQuery);
+            System.out.println("Using database School");
+        } catch (SQLException e) {
+            System.out.println("Error using database: " + e.getMessage());
+        }
+    }
+
+    private static void createTable(Statement statement) {
+        String createTableQuery = "CREATE TABLE IF NOT EXISTS Students (StudentID INT PRIMARY KEY, FirstName VARCHAR(50), LastName VARCHAR(50), Email VARCHAR(50), Age INT)";
+        try {
+            statement.executeUpdate(createTableQuery);
+            System.out.println("Table created successfully!");
+        } catch (SQLException e) {
+            System.out.println("Error creating table: " + e.getMessage());
+        }
+    }
+
+    private static void createStudent(Statement statement, int id, String firstName, String lastName, String email,
+            int age) {
+        String insertQuery = String.format(
+                "INSERT INTO Students (StudentID, FirstName, LastName, Email, Age) VALUES (%d, '%s', '%s', '%s', %d)",
+                id, firstName, lastName, email, age);
+
+        try {
+            int rowsInserted = statement.executeUpdate(insertQuery);
+            if (rowsInserted > 0) {
+                System.out.println("Record inserted successfully!");
+            }
+        } catch (SQLException e) {
+            System.out.println("Error inserting record: " + e.getMessage());
+        }
+    }
+
+    private static void readStudents(Statement statement) {
+        String selectQuery = "SELECT * FROM Students";
+
+        try {
+            ResultSet resultSet = statement.executeQuery(selectQuery);
+            while (resultSet.next()) {
+                int id = resultSet.getInt("StudentID");
+                String firstName = resultSet.getString("FirstName");
+                String lastName = resultSet.getString("LastName");
+                String email = resultSet.getString("Email");
+                int age = resultSet.getInt("Age");
+
+                System.out.println(
+                        "ID: " + id + ", Name: " + firstName + " " + lastName + ", Email: " + email + ", Age: " + age);
+            }
+        } catch (SQLException e) {
+            System.out.println("Error reading records: " + e.getMessage());
+        }
+    }
+
+    private static void updateStudent(Statement statement, int id, String updatedFirstName) {
+        String updateQuery = String.format("UPDATE Students SET FirstName = '%s' WHERE StudentID = %d",
+                updatedFirstName, id);
+
+        try {
+            int rowsUpdated = statement.executeUpdate(updateQuery);
+            if (rowsUpdated > 0) {
+                System.out.println("Record updated successfully!");
+            }
+        } catch (SQLException e) {
+            System.out.println("Error updating record: " + e.getMessage());
+        }
+    }
+
+    private static void deleteStudent(Statement statement, int id) {
+        String deleteQuery = String.format("DELETE FROM Students WHERE StudentID = %d", id);
+
+        try {
+            int rowsDeleted = statement.executeUpdate(deleteQuery);
+            if (rowsDeleted > 0) {
+                System.out.println("Record deleted successfully!");
+            }
+        } catch (SQLException e) {
+            System.out.println("Error deleting record: " + e.getMessage());
+        }
+    }
+}
